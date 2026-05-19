@@ -1,0 +1,26 @@
+# ── Python ──────────────────────────────────────────────
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/**/*.pyc
+backend/**/*.pyo
+*.egg-info/
+.pytest_cache/
+
+# ── Environment / Secrets ────────────────────────────────
+backend/.env
+frontend/.env.local
+.env
+.env.*
+!.env.example        # allow example templates
+
+# ── Node / Frontend ──────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# ── OS / Editor ──────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
