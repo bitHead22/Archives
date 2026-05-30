@@ -6,12 +6,14 @@ import SelectCoursePage from '@/pages/SelectCoursePage'
 import SemestersPage from '@/pages/SemestersPage'
 import PapersPage from '@/pages/PapersPage'
 import ViewerPage from '@/pages/ViewerPage'
+import AboutPage from '@/pages/AboutPage'
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/auth" element={<AuthPage />} />
+      <Route path="/about" element={<AboutPage />} />
       
       <Route element={<ProtectedRoute />}>
         <Route path="/select-course" element={<SelectCoursePage />} />

@@ -36,14 +36,14 @@ export default function ViewerPage() {
   useEffect(() => {
     async function loadCloudHistory() {
       if (!user?.id || !paperId) return
-      
+
       const { data, error } = await supabase
         .from('chat_sessions')
         .select('messages')
         .eq('user_id', user.id)
         .eq('paper_id', paperId)
         .single()
-        
+
       if (data?.messages) {
         setMessages(data.messages)
       } else if (error && error.code !== 'PGRST116') {
@@ -57,10 +57,10 @@ export default function ViewerPage() {
   useEffect(() => {
     async function saveCloudHistory() {
       if (!user?.id || !paperId || messages.length <= 1) return
-      
+
       // Limit to 15 messages (7 Q&A pairs + greeting) to prevent flooding as planned
       const cappedMessages = messages.length > 15 ? messages.slice(-15) : messages
-      
+
       const { error } = await supabase
         .from('chat_sessions')
         .upsert({
@@ -69,10 +69,10 @@ export default function ViewerPage() {
           messages: cappedMessages,
           updated_at: new Date().toISOString()
         }, { onConflict: 'user_id,paper_id' })
-        
+
       if (error) console.error("Cloud persistence error:", error)
     }
-    
+
     saveCloudHistory()
   }, [messages, user?.id, paperId])
   const chatEndRef = useRef(null)
@@ -126,7 +126,7 @@ export default function ViewerPage() {
   const [numPages, setNumPages] = useState(null)
   const [pageNumber, setPageNumber] = useState(1)
   const [zoom, setZoom] = useState(100)
-  const [isChatOpen, setIsChatOpen] = useState(true)
+  const [isChatOpen, setIsChatOpen] = useState(() => typeof window !== 'undefined' ? window.innerWidth > 768 : true)
 
   function onDocumentLoadSuccess({ numPages }) {
     setNumPages(numPages)
@@ -159,27 +159,27 @@ export default function ViewerPage() {
     <div className="bg-black text-white font-sans flex flex-col h-screen overflow-hidden antialiased selection:bg-neutral-800 selection:text-white">
       {/* Header */}
       <header className="flex-none h-14 bg-black border-b border-neutral-800 px-4 md:px-6 flex items-center justify-between z-20 relative">
-        <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
+        <div className="flex-1 min-w-0 flex items-center gap-3 md:gap-4 overflow-hidden pr-2">
           <button
             onClick={() => window.history.back()}
             className="flex-none p-2 hover:bg-neutral-900 rounded-none transition-colors text-neutral-400 hover:text-white"
           >
             <ArrowLeft size={20} />
           </button>
-          <div className="flex flex-col justify-center overflow-hidden">
+          <div className="flex flex-col justify-center overflow-hidden min-w-0">
             <h1 className="font-semibold text-sm md:text-base tracking-tight text-white whitespace-nowrap overflow-hidden text-ellipsis">
               {paper.subject}
             </h1>
-            <p className="text-xs text-neutral-400 font-normal whitespace-nowrap">
+            <p className="text-xs text-neutral-400 font-normal whitespace-nowrap overflow-hidden text-ellipsis">
               {paper.term}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 md:gap-6 flex-none">
+        <div className="flex items-center gap-2 md:gap-4 flex-none shrink-0">
           {/* Mark Solved Toggle */}
-          <div className="hidden lg:flex items-center gap-3 bg-black py-1 px-3 border border-neutral-800">
-            <div className="flex flex-col items-end mr-1">
+          <div className="flex items-center gap-2 md:gap-3 bg-black py-1 px-2 md:px-3 border border-neutral-800">
+            <div className="hidden md:flex flex-col items-end mr-1">
               <span className="text-xs font-medium text-white leading-none">Mark Solved</span>
             </div>
             <label className="relative flex h-[20px] w-[36px] cursor-pointer items-center rounded-full border border-neutral-700 bg-neutral-900 p-0.5 has-[:checked]:bg-white transition-colors duration-200">
@@ -193,7 +193,7 @@ export default function ViewerPage() {
             </label>
           </div>
 
-          <div className="hidden lg:block h-6 w-px bg-neutral-800"></div>
+          <div className="hidden md:block h-6 w-px bg-neutral-800"></div>
 
           {/* Download Button */}
           {pdfUrl ? (
@@ -202,42 +202,43 @@ export default function ViewerPage() {
               download={`${paper.subject}.pdf`}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-2 px-4 py-1.5 text-xs font-medium text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 rounded-none transition-colors cursor-pointer"
+              className="flex items-center justify-center w-8 h-8 md:w-auto md:px-4 md:py-1.5 md:gap-2 text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 rounded-none transition-colors cursor-pointer"
             >
               <Download size={16} />
-              <span className="hidden md:inline">Download</span>
+              <span className="hidden md:inline text-xs font-medium">Download</span>
             </a>
           ) : (
-            <button disabled className="hidden sm:flex opacity-50 items-center gap-2 px-4 py-1.5 text-xs font-medium text-white bg-neutral-900 border border-neutral-800 rounded-none transition-colors cursor-not-allowed">
+            <button disabled className="flex items-center justify-center w-8 h-8 md:w-auto md:px-4 md:py-1.5 md:gap-2 opacity-50 text-white bg-neutral-900 border border-neutral-800 rounded-none transition-colors cursor-not-allowed">
               <Download size={16} />
-              <span className="hidden md:inline">Download</span>
+              <span className="hidden md:inline text-xs font-medium">Download</span>
             </button>
           )}
 
-          <div className="hidden lg:block h-6 w-px bg-neutral-800"></div>
+          <div className="hidden md:block h-6 w-px bg-neutral-800"></div>
 
           {/* Toggle Chat Button */}
-          <button 
+          <button
             onClick={() => setIsChatOpen(!isChatOpen)}
-            className={`flex items-center gap-2 px-4 py-1.5 text-xs font-medium border transition-colors ${
-              isChatOpen 
-                ? 'bg-white text-black border-white hover:bg-neutral-200' 
+            className={`flex items-center justify-center w-8 h-8 md:w-auto md:px-4 md:py-1.5 md:gap-2 border transition-colors ${isChatOpen
+                ? 'bg-white text-black border-white hover:bg-neutral-200'
                 : 'bg-neutral-900 text-white border-neutral-800 hover:bg-neutral-800'
-            }`}
+              }`}
             title="Toggle Assistant"
           >
             <Bot size={16} />
-            <span className="hidden sm:inline">{isChatOpen ? "Close Assistant" : "Open Assistant"}</span>
+            <span className="hidden lg:inline text-xs font-medium">{isChatOpen ? "Close Assistant" : "Open Assistant"}</span>
           </button>
 
           {/* User Profile */}
-          <UserAvatar />
+          <div className="hidden sm:block">
+            <UserAvatar />
+          </div>
         </div>
       </header>
 
-      <main className="flex-1 flex overflow-hidden bg-black">
+      <main className="flex-1 flex flex-col md:flex-row overflow-hidden bg-black">
         {/* PDF Viewer Section */}
-        <section className="flex-1 flex flex-col min-w-0 bg-[#0a0a0a] relative border-r border-neutral-800 group/pdf-viewer">
+        <section className="flex-1 flex flex-col min-w-0 bg-[#0a0a0a] relative md:border-r border-neutral-800 group/pdf-viewer">
           {/* PDF Toolbar */}
           <div className="flex-none bg-black border-b border-neutral-800 px-4 py-2 flex justify-between items-center z-10">
             <div className="flex items-center gap-px bg-neutral-900 border border-neutral-800">
@@ -316,15 +317,15 @@ export default function ViewerPage() {
         </section>
 
         {/* AI Tutor Chat Section */}
-        <aside 
-          className={`hidden md:flex flex-none flex-col bg-black border-neutral-800 z-30 transition-all duration-300 ease-in-out ${isChatOpen ? 'w-[400px] lg:w-[480px] xl:w-[520px] border-l opacity-100 translate-x-0' : 'w-0 border-none opacity-0 translate-x-[50px] overflow-hidden'}`}
+        <aside
+          className={`flex flex-none flex-col bg-black border-neutral-800 z-30 transition-all duration-300 ease-in-out ${isChatOpen ? 'h-[55vh] md:h-auto w-full md:w-[400px] lg:w-[480px] xl:w-[520px] border-t md:border-t-0 md:border-l opacity-100' : 'h-0 md:h-auto w-full md:w-0 border-none opacity-0 overflow-hidden'}`}
         >
           <div className="flex-none px-5 py-3 border-b border-neutral-800 flex items-center gap-3 bg-black sticky top-0 w-full min-w-[400px]">
             <div className="size-8 bg-white flex items-center justify-center text-black shadow-lg">
               <Sparkles size={18} />
             </div>
             <div>
-              <h2 className="font-semibold text-sm text-white leading-tight">AI Tutor</h2>
+              <h2 className="font-semibold text-sm text-white leading-tight">Archi</h2>
               <p className="text-[10px] text-neutral-400 font-medium uppercase tracking-wider">Context Aware</p>
             </div>
             <div className="ml-auto flex gap-1">

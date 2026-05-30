@@ -24,3 +24,10 @@ frontend/.vite/
 Thumbs.db
 .vscode/
 .idea/
+
+# ── Local Scripts / Seed Data ────────────────────────────
+backend/ingest_local.py
+backend/ingest_markdown.py
+backend/seed.py
+backend/map_paper.py
+backend/*.md

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useSemesters } from '@/hooks/useCourses'
+import { usePapers } from '@/hooks/usePapers'
 import { Search, ChevronRight } from 'lucide-react'
 import { UserAvatar } from '@/components/UserAvatar'
 
@@ -10,8 +11,6 @@ const EXAM_TERMS = [
   { id: 'end_sem', title: 'End Semester' },
 ]
 
-const AVAILABLE_YEARS = [2024, 2023, 2022, 2021]
-
 export default function SemestersPage() {
   const { courseId } = useParams()
   const { semesters, loading: semLoading, error: semError } = useSemesters(courseId)
@@ -19,16 +18,21 @@ export default function SemestersPage() {
   const [selectedSemester, setSelectedSemester] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
 
+  const { papers, loading: papersLoading, error: papersError } = usePapers(selectedSemester?.id)
+
   useEffect(() => {
     if (semesters?.length > 0 && !selectedSemester) {
       setSelectedSemester(semesters[0])
     }
   }, [semesters, selectedSemester])
 
-  // Filter years that match search query
-  const filteredYears = AVAILABLE_YEARS.filter(y =>
-    y.toString().includes(searchQuery.trim())
-  )
+  const getFilteredYearsForTerm = (termId) => {
+    if (!papers) return []
+    const termPapers = papers.filter(p => p.exam_type === termId)
+    const years = [...new Set(termPapers.map(p => p.year))].filter(Boolean)
+    const sortedYears = years.sort((a, b) => b - a)
+    return sortedYears.filter(y => y.toString().includes(searchQuery.trim()))
+  }
 
   return (
     <div className="bg-black text-white font-display min-h-screen flex flex-col overflow-x-hidden antialiased selection:bg-neutral-800 selection:text-white">
@@ -135,7 +139,9 @@ export default function SemestersPage() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-12">
-                  {EXAM_TERMS.map(term => (
+                  {EXAM_TERMS.map(term => {
+                    const termYears = getFilteredYearsForTerm(term.id)
+                    return (
                     <section key={term.id} className="flex flex-col gap-6">
                       {/* Term heading */}
                       <div className="flex items-center gap-4">
@@ -144,11 +150,15 @@ export default function SemestersPage() {
                       </div>
 
                       {/* Year cards */}
-                      {filteredYears.length === 0 ? (
-                        <p className="text-neutral-600 text-sm uppercase tracking-widest">No years match your search.</p>
+                      {papersLoading ? (
+                        <p className="text-neutral-500 text-sm uppercase tracking-widest">Loading years...</p>
+                      ) : termYears.length === 0 ? (
+                        <p className="text-neutral-600 text-sm uppercase tracking-widest">
+                          {searchQuery.trim() ? "No years match your search." : "No question paper available."}
+                        </p>
                       ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
-                          {filteredYears.map(year => (
+                          {termYears.map(year => (
                             <Link
                               key={`${term.id}-${year}`}
                               to={`/semester/${selectedSemester.id}/papers?term=${term.id}&year=${year}`}
@@ -161,14 +171,14 @@ export default function SemestersPage() {
                                 {year}
                               </span>
                               <span className="inline-flex items-center gap-1 bg-neutral-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400 border border-neutral-800 w-fit mt-2 group-hover:border-white group-hover:text-white transition-all duration-200">
-                                Pending
+                                View Papers
                               </span>
                             </Link>
                           ))}
                         </div>
                       )}
                     </section>
-                  ))}
+                  )})}
                 </div>
               )}
             </div>
