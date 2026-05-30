@@ -56,3 +56,60 @@ The AI Tutor is built on a highly optimized **Retrieval-Augmented Generation (RA
 - **Database:** Supabase (PostgreSQL with `pgvector` for similarity search)
 - **Authentication:** Supabase Auth (Email/Password, Google OAuth)
 - **Storage:** Supabase Storage (PDF buckets)
+
+---
+
+## 🛠️ Running Locally
+
+### 1. Prerequisites
+- Node.js (v18+)
+- Python (3.11+)
+- Supabase account & project
+- Google AI Studio API Key (Gemini)
+
+### 2. Clone the Repository
+```bash
+git clone https://github.com/bitHead22/Archives.git
+cd Archives
+```
+
+### 3. Backend Setup (FastAPI)
+```bash
+cd backend
+python -m venv venv
+# On Windows: .\venv\Scripts\activate
+# On Mac/Linux: source venv/bin/activate
+pip install -r requirements.txt
+```
+Create a `.env` file in the `backend` folder:
+```env
+GOOGLE_API_KEY=your_gemini_api_key
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+ENVIRONMENT=development
+CORS_ORIGINS=http://localhost:5173
+```
+Run the backend server:
+```bash
+python -m uvicorn app.main:app --reload --port 8000
+```
+
+### 4. Frontend Setup (React/Vite)
+Open a new terminal window:
+```bash
+cd frontend
+npm install
+```
+Create a `.env.local` file in the `frontend` folder:
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_API_URL=http://localhost:8000
+```
+Run the frontend development server:
+```bash
+npm run dev
+```
+
+Your app will now be running on `http://localhost:5173`!
